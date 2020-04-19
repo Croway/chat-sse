@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <meta charset="utf-8" />
+    <title>Chat SSE</title>
+    <script type="application/javascript">
+        var eventSource = null;
+
+        function connectEventSource(e) {
+            e.preventDefault();
+            if (!!window.EventSource) {
+                var chatId = document.getElementById('chatId');
+
+                if (eventSource) {
+                    eventSource.close();
+                    var container = document.getElementById("chat");
+                    $('#chat').html('');
+                }
+
+                eventSource = new EventSource("/chat/" + chatId.value);
+                eventSource.onmessage = function (event) {
+                    var container = document.getElementById("chat");
+                    var paragraph = document.createElement("p");
+                    paragraph.innerHTML = event.data;
+                    container.appendChild(paragraph);
+                };
+
+                $('#chatIdP').html('Joined chat - ' + chatId.value);
+            } else {
+                window.alert("EventSource not available on this browser.")
+            }
+        }
+
+        function sendMessage(e) {
+            e.preventDefault();
+            if(!eventSource || !document.getElementById('chatId').value) {
+                return;
+            }
+
+            var chatId = document.getElementById('chatId');
+            var message = document.getElementById('message');
+
+            var http = new XMLHttpRequest();
+
+            http.open('POST', "chat/message", true);
+            http.setRequestHeader('Content-type', 'application/json');
+
+            http.onreadystatechange = function () {
+                if (http.readyState == 4 && http.status == 200) {
+                    alert(http.responseText);
+                }
+            }
+            http.send(JSON.stringify({ chat: chatId.value, message: message.value }));
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Chat with server side event</h1>
+
+        <form class="form-inline">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="chatId">Chat to join</label>
+                <input type="text" class="form-control" id="chatId" style="margin-left: 20px;">
+            </div>
+            <button onclick="connectEventSource(event)" class="btn btn-primary mb-2">ENTER</button>
+        </form>
+
+        <p id="chatIdP"></p>
+
+        <div id="chat" class="overflow-auto" style="min-height: 60vh; max-height: 60vh;"></div>
+
+        <form class="form-inline">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="message">Message</label>
+                <input type="text" class="form-control" id="message" style="width: 60vw; margin-left: 20px;">
+            </div>
+            <button onclick="sendMessage(event)" class="btn btn-success mb-2">SEND</button>
+        </form>
+    </div>
+</body>
+
+<footer>
+    <script src="https://code.jquery.com/jquery-3.5.0.min.js"
+        integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+</footer>
+
+</html>
