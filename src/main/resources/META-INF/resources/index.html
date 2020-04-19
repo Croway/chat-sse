@@ -50,8 +50,9 @@
             http.setRequestHeader('Content-type', 'application/json');
 
             http.onreadystatechange = function () {
-                if (http.readyState == 4 && http.status == 200) {
-                    alert(http.responseText);
+                if (http.status == 204) {
+                    var chatHistory = document.getElementById("chat");
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
                 }
             }
             http.send(JSON.stringify({ chat: chatId.value, message: message.value }));
@@ -73,7 +74,7 @@
 
         <p id="chatIdP"></p>
 
-        <div id="chat" class="overflow-auto" style="min-height: 60vh; max-height: 60vh;"></div>
+        <div id="chat"  data-spy="scroll" data-offset="0" class="overflow-auto" style="min-height: 60vh; max-height: 60vh;"></div>
 
         <form class="form-inline">
             <div class="form-group mx-sm-3 mb-2">
